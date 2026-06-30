@@ -1,4 +1,4 @@
-# 📚 WBJEE Progress Tracker
+# 📖 WBJEE Progress Tracker
 
 > Studying isn't just about working hard.
 > It's about knowing **what to study, when to revise, and where you're falling behind.**
@@ -11,7 +11,7 @@ This project is still evolving, and every update teaches me something new about 
 
 ---
 
-## ✨ What can it do?
+## ❖ What can it do?
 
 ✔ Track chapter completion
 
@@ -25,11 +25,11 @@ This project is still evolving, and every update teaches me something new about 
 
 ✔ Mobile + Web support
 
-🚧 AI recommendations (currently under development)
+◌ AI recommendations (currently under development)
 
 ---
 
-## 🌐 Platforms
+## ◈ Platforms
 
 **Web Application**
 Built using React + Vite.
@@ -39,7 +39,7 @@ Built using Capacitor so the same project can run as a native Android app.
 
 ---
 
-## 🛠 Built With
+## ⚙ Tech Stack
 
 - React
 - JavaScript
@@ -51,7 +51,7 @@ Built using Capacitor so the same project can run as a native Android app.
 
 ---
 
-## 🚀 Why this project?
+## 💡 Why this project?
 
 This isn't just another coding project.
 
@@ -61,37 +61,37 @@ Instead of following tutorials step by step, I challenged myself to build a real
 
 ---
 
-## 📈 Current Status
+## 📊 Current Status
 
 The project is actively being developed.
 
 Completed:
-- Progress Tracking
-- Dashboard
-- Study Journal
-- Practice Module
+- ✔ Progress Tracking
+- ✔ Dashboard
+- ✔ Study Journal
+- ✔ Practice Module
 
 Currently Working On:
-- AI Study Recommendations
-- API Integration
-- Better UI/UX
-- Performance Improvements
+- ◌ AI Study Recommendations
+- ◌ API Integration
+- ◌ Better UI/UX
+- ◌ Performance Improvements
 
 ---
 
-## 🔮 Future Vision
+## 🎯 Future Vision
 
 My goal is to transform this into an intelligent study companion that can:
 
-- Recommend what to study next
-- Analyse weak chapters
-- Predict preparation level
-- Personalise revision schedules
-- Become a complete learning assistant for competitive exam students
+- ➜ Recommend what to study next
+- ➜ Analyse weak chapters
+- ➜ Predict preparation level
+- ➜ Personalise revision schedules
+- ➜ Become a complete learning assistant for competitive exam students
 
 ---
 
-## 👨‍💻 About Me
+## 👋 About Me
 
 Hi, I'm **Sayan Samanta**.
 

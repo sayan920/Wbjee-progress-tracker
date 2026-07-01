@@ -21,11 +21,17 @@ export default function WebApp() {
       <div style={orbRight} />
       <aside style={sidebar}>
         <div style={brandCard}>
-          <div style={brandBadge}>WB</div>
+          <div style={brandBadge}>SS</div>
           <div>
-            <div style={eyebrow}>Premium Web Experience</div>
-            <h1 style={brandTitle}>WBJEE Command Center</h1>
-            <p style={brandText}>A richer dashboard with layered motion, glass panels, and guided study focus.</p>
+            <div style={eyebrow}>YOUR STUDY HUB</div>
+            <h1 style={brandTitle}>StudySpace</h1>
+            
+  <p style={brandText}>
+  Track your progress.<br />
+  Stay consistent.<br />
+  Achieve your goals.
+</p>
+
           </div>
         </div>
 

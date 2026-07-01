@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { navItems, pageMeta } from "../../shared/navigation";
+import UserSessionBar from "../../components/auth/UserSessionBar";
 import DashboardPage from "./pages/DashboardPage";
 import ChaptersPage from "./pages/ChaptersPage";
 import PracticePage from "./pages/PracticePage";
@@ -49,6 +50,10 @@ export default function WebApp() {
               </button>
             );
           })}
+        </div>
+
+        <div style={sessionWrap}>
+          <UserSessionBar />
         </div>
       </aside>
 
@@ -160,6 +165,10 @@ const brandText = {
 const navStack = {
   display: "grid",
   gap: "12px",
+  marginTop: "24px"
+};
+
+const sessionWrap = {
   marginTop: "24px"
 };
 

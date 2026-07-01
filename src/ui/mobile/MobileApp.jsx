@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { navItems, pageMeta } from "../../shared/navigation";
+import UserSessionBar from "../../components/auth/UserSessionBar";
 import DashboardPage from "./pages/DashboardPage";
 import ChaptersPage from "./pages/ChaptersPage";
 import PracticePage from "./pages/PracticePage";
@@ -21,6 +22,9 @@ export default function MobileApp() {
         <div style={eyebrow}>Mobile Mode</div>
         <h1 style={title}>{pageMeta[page].title}</h1>
         <p style={subtitle}>{pageMeta[page].subtitle}</p>
+        <div style={sessionWrap}>
+          <UserSessionBar compact />
+        </div>
       </header>
 
       <main style={content}>{renderedPage}</main>
@@ -72,6 +76,10 @@ const subtitle = {
   fontSize: "14px",
   lineHeight: 1.55,
   textAlign: "left"
+};
+
+const sessionWrap = {
+  marginTop: "14px"
 };
 
 const content = {

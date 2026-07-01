@@ -1,16 +1,102 @@
-# React + Vite
+# 📖 WBJEE Progress Tracker
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+> Studying isn't just about working hard.
+> It's about knowing **what to study, when to revise, and where you're falling behind.**
 
-Currently, two official plugins are available:
+WBJEE Progress Tracker is a project I started to solve that problem.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Instead of keeping notes across notebooks, spreadsheets, and random apps, I wanted one place where a student could track chapters, analyse progress, maintain a study journal, and eventually receive AI-powered study recommendations.
 
-## React Compiler
+This project is still evolving, and every update teaches me something new about software development.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+---
 
-## Expanding the ESLint configuration
+## ❖ What can it do?
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+✔ Track chapter completion
+
+✔ Monitor study progress
+
+✔ Practice dashboard
+
+✔ Study journal
+
+✔ Progress analytics
+
+✔ Mobile + Web support
+
+◌ AI recommendations (currently under development)
+
+---
+
+## ◈ Platforms
+
+**Web Application**
+Built using React + Vite.
+
+**Android Application**
+Built using Capacitor so the same project can run as a native Android app.
+
+---
+
+## ⚙ Tech Stack
+
+- React
+- JavaScript
+- CSS
+- Vite
+- Firebase
+- Capacitor
+- Node.js
+
+---
+
+## 💡 Why this project?
+
+This isn't just another coding project.
+
+I wanted to build something that I would actually use during my own WBJEE preparation.
+
+Instead of following tutorials step by step, I challenged myself to build a real application, understand how different technologies work together, and improve it continuously as I learn.
+
+---
+
+## 📊 Current Status
+
+The project is actively being developed.
+
+Completed:
+- ✔ Progress Tracking
+- ✔ Dashboard
+- ✔ Study Journal
+- ✔ Practice Module
+
+Currently Working On:
+- ◌ AI Study Recommendations
+- ◌ API Integration
+- ◌ Better UI/UX
+- ◌ Performance Improvements
+
+---
+
+## 🎯 Future Vision
+
+My goal is to transform this into an intelligent study companion that can:
+
+- ➜ Recommend what to study next
+- ➜ Analyse weak chapters
+- ➜ Predict preparation level
+- ➜ Personalise revision schedules
+- ➜ Become a complete learning assistant for competitive exam students
+
+---
+
+## 👋 About Me
+
+Hi, I'm **Sayan Samanta**.
+
+I'm currently learning software development by building real-world projects instead of only following courses.
+
+This project is one step in that journey, and I'll continue improving it as I learn new technologies.
+
+Every commit represents something new I've learned.

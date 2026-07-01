@@ -11,6 +11,7 @@ export const REMINDERS_KEY = "reminders";
 export const SETTINGS_KEY = "settings";
 export const STATISTICS_KEY = "statistics";
 export const STUDY_META_KEY = "studyMeta";
+export const STUDY_CACHE_OWNER_KEY = "studyCacheOwner";
 export const PENDING_EXAMGOAL_KEY = "pendingExamGoalSession";
 
 const STORAGE_KEYS = {
@@ -91,6 +92,15 @@ function setStoredValue(key, value) {
 
 function dispatchStudyUpdate() {
   window.dispatchEvent(new Event("studyDataUpdated"));
+}
+
+export function readStudyCacheOwner() {
+  return localStorage.getItem(STUDY_CACHE_OWNER_KEY) || "";
+}
+
+export function setStudyCacheOwner(uid) {
+  if (!uid) return;
+  localStorage.setItem(STUDY_CACHE_OWNER_KEY, uid);
 }
 
 export function readStudyMetadata() {
@@ -193,6 +203,11 @@ export function writeLocalStudyData(studyData, { metadata = {}, silent = false }
   if (!silent) {
     dispatchStudyUpdate();
   }
+}
+
+export function replaceLocalStudyDataForUser(uid, studyData, options = {}) {
+  writeLocalStudyData(studyData, options);
+  setStudyCacheOwner(uid);
 }
 
 export function writeStudySection(section, value, { silent = false, updatedAt } = {}) {

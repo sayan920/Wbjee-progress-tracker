@@ -6,8 +6,9 @@ import {
   getLatestMetadataTimestamp,
   hasMeaningfulStudyData,
   readLocalStudyData,
+  readStudyCacheOwner,
   readStudyMetadata,
-  writeLocalStudyData
+  replaceLocalStudyDataForUser
 } from "../../lib/studyData";
 import {
   ensureUserProfile,
@@ -28,10 +29,12 @@ export default function AuthBootstrap({ children }) {
         return;
       }
 
-      const localStudyData = readLocalStudyData();
-      const localMetadata = readStudyMetadata();
-      const localHasData = hasMeaningfulStudyData(localStudyData);
-      const localLatestTimestamp = getLatestLocalTimestamp(localMetadata);
+      const cacheOwner = readStudyCacheOwner();
+      const localBelongsToCurrentUser = cacheOwner === user.uid;
+      const localStudyData = localBelongsToCurrentUser ? readLocalStudyData() : createEmptyStudyData();
+      const localMetadata = localBelongsToCurrentUser ? readStudyMetadata() : {};
+      const localHasData = localBelongsToCurrentUser && hasMeaningfulStudyData(localStudyData);
+      const localLatestTimestamp = localBelongsToCurrentUser ? getLatestLocalTimestamp(localMetadata) : "";
 
       await ensureUserProfile(user.uid, user);
 
@@ -41,18 +44,26 @@ export default function AuthBootstrap({ children }) {
       if (!remote.hasRemoteData) {
         if (localHasData) {
           await writeRemoteStudyData(user.uid, localStudyData, localMetadata);
+          replaceLocalStudyDataForUser(user.uid, localStudyData, {
+            metadata: localMetadata,
+            silent: true
+          });
         } else {
           const defaults = createEmptyStudyData();
-          writeLocalStudyData(defaults, { silent: true });
+          replaceLocalStudyDataForUser(user.uid, defaults, { silent: true });
           await writeRemoteStudyData(user.uid, defaults, readStudyMetadata());
         }
       } else if (!localHasData || remoteLatestTimestamp > localLatestTimestamp) {
-        writeLocalStudyData(remote.studyData, {
+        replaceLocalStudyDataForUser(user.uid, remote.studyData, {
           metadata: remote.metadata,
           silent: true
         });
       } else if (localLatestTimestamp > remoteLatestTimestamp) {
         await writeRemoteStudyData(user.uid, localStudyData, localMetadata);
+        replaceLocalStudyDataForUser(user.uid, localStudyData, {
+          metadata: localMetadata,
+          silent: true
+        });
       }
 
       window.dispatchEvent(new Event("studyDataUpdated"));

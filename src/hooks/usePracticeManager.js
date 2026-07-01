@@ -6,7 +6,12 @@ import { analyzeProgressWithCoach } from "../lib/aiCoach";
 import { openExamGoal } from "../lib/examGoal";
 import { syncStudyStateToFirebase } from "../lib/firebaseSync";
 import { lightHaptic, successHaptic } from "../lib/mobileNative";
-import { appendJourneyEntry, readStudyState } from "../lib/studyData";
+import {
+  appendJourneyEntry,
+  readStudySection,
+  readStudyState,
+  writeStudySection
+} from "../lib/studyData";
 
 const allSubjects = {
   Math: mathData,
@@ -34,8 +39,7 @@ export default function usePracticeManager() {
   const [examGoalMessage, setExamGoalMessage] = useState("");
 
   useEffect(() => {
-    const saved = JSON.parse(localStorage.getItem("practiceLogs")) || [];
-    setLogs(saved);
+    setLogs(readStudySection("practiceLogs"));
   }, []);
 
   const today = new Date().toLocaleDateString();
@@ -79,10 +83,9 @@ export default function usePracticeManager() {
 
     const updatedLogs = [...newEntries, ...logs];
     setLogs(updatedLogs);
-    localStorage.setItem("practiceLogs", JSON.stringify(updatedLogs));
-    window.dispatchEvent(new Event("studyDataUpdated"));
+    writeStudySection("practiceLogs", updatedLogs);
 
-    const chapters = JSON.parse(localStorage.getItem("chapters")) || {};
+    const chapters = readStudySection("chapters");
     newEntries.forEach((entry) => {
       Object.keys(chapters).forEach((subject) => {
         chapters[subject]?.forEach((chapter) => {
@@ -94,7 +97,7 @@ export default function usePracticeManager() {
         });
       });
     });
-    localStorage.setItem("chapters", JSON.stringify(chapters));
+    writeStudySection("chapters", chapters);
 
     const mistakes = newEntries
       .filter((entry) => entry.correct < entry.total)
@@ -105,8 +108,8 @@ export default function usePracticeManager() {
         accuracy: entry.accuracy,
         date: today
       }));
-    const old = JSON.parse(localStorage.getItem("mistakes")) || [];
-    localStorage.setItem("mistakes", JSON.stringify([...mistakes, ...old]));
+    const old = readStudySection("mistakes");
+    writeStudySection("mistakes", [...mistakes, ...old]);
 
     appendJourneyEntry({
       type: "practice",
@@ -116,7 +119,7 @@ export default function usePracticeManager() {
 
     const currentState = readStudyState();
     analyzeProgressWithCoach(currentState, "practice_save");
-    syncStudyStateToFirebase(currentState);
+    await syncStudyStateToFirebase(currentState);
     await successHaptic();
 
     setSlots([emptySlot(), emptySlot(), emptySlot()]);

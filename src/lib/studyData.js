@@ -1,12 +1,233 @@
+import { chemistryData } from "../data/chemistryData";
+import { mathData } from "../data/mathData";
+import { physicsData } from "../data/physicsData";
+
+export const PRACTICE_LOGS_KEY = "practiceLogs";
+export const CHAPTERS_KEY = "chapters";
+export const MISTAKES_KEY = "mistakes";
 export const COACH_REPORT_KEY = "coachReport";
 export const JOURNEY_FEED_KEY = "journeyFeed";
+export const REMINDERS_KEY = "reminders";
+export const SETTINGS_KEY = "settings";
+export const STATISTICS_KEY = "statistics";
+export const STUDY_META_KEY = "studyMeta";
 export const PENDING_EXAMGOAL_KEY = "pendingExamGoalSession";
 
-export function readStudyState() {
+const STORAGE_KEYS = {
+  chapters: CHAPTERS_KEY,
+  practiceLogs: PRACTICE_LOGS_KEY,
+  mistakes: MISTAKES_KEY,
+  coachReport: COACH_REPORT_KEY,
+  journeyFeed: JOURNEY_FEED_KEY,
+  reminders: REMINDERS_KEY,
+  settings: SETTINGS_KEY,
+  statistics: STATISTICS_KEY
+};
+
+const DEFAULT_CHAPTERS = {
+  Math: mathData,
+  Physics: physicsData,
+  Chemistry: chemistryData
+};
+
+function createDefaultChapters() {
   return {
-    logs: JSON.parse(localStorage.getItem("practiceLogs")) || [],
-    chapters: JSON.parse(localStorage.getItem("chapters")) || {},
-    mistakes: JSON.parse(localStorage.getItem("mistakes")) || []
+    Math: DEFAULT_CHAPTERS.Math.map((chapter) => ({ ...chapter })),
+    Physics: DEFAULT_CHAPTERS.Physics.map((chapter) => ({ ...chapter })),
+    Chemistry: DEFAULT_CHAPTERS.Chemistry.map((chapter) => ({ ...chapter }))
+  };
+}
+
+function parseStoredValue(key, fallback) {
+  const raw = localStorage.getItem(key);
+  if (!raw) return fallback;
+
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return fallback;
+  }
+}
+
+function isValidChapterState(value) {
+  return (
+    Boolean(value) &&
+    typeof value === "object" &&
+    ["Math", "Physics", "Chemistry"].every((key) => Array.isArray(value[key]) && value[key].length > 0)
+  );
+}
+
+function defaultSectionValue(section) {
+  if (section === "chapters") return createDefaultChapters();
+  if (section === "practiceLogs") return [];
+  if (section === "mistakes") return [];
+  if (section === "coachReport") return null;
+  if (section === "journeyFeed") return [];
+  if (section === "reminders") return null;
+  if (section === "settings") return {};
+  if (section === "statistics") return {};
+  return null;
+}
+
+function normalizeSection(section, value) {
+  if (section === "chapters") {
+    return isValidChapterState(value) ? value : createDefaultChapters();
+  }
+
+  if (section === "practiceLogs" || section === "mistakes" || section === "journeyFeed") {
+    return Array.isArray(value) ? value : [];
+  }
+
+  if (section === "settings" || section === "statistics") {
+    return value && typeof value === "object" ? value : {};
+  }
+
+  return value ?? defaultSectionValue(section);
+}
+
+function setStoredValue(key, value) {
+  localStorage.setItem(key, JSON.stringify(value));
+}
+
+function dispatchStudyUpdate() {
+  window.dispatchEvent(new Event("studyDataUpdated"));
+}
+
+export function readStudyMetadata() {
+  return parseStoredValue(STUDY_META_KEY, {});
+}
+
+function writeStudyMetadata(metadata) {
+  setStoredValue(STUDY_META_KEY, metadata);
+}
+
+export function getLatestMetadataTimestamp(metadata = {}) {
+  const timestamps = Object.values(metadata).filter(Boolean);
+  if (!timestamps.length) return "";
+  return timestamps.sort().at(-1) || "";
+}
+
+export function getLatestLocalTimestamp(metadata = readStudyMetadata()) {
+  return getLatestMetadataTimestamp(metadata);
+}
+
+export function createEmptyStudyData() {
+  const base = {
+    chapters: createDefaultChapters(),
+    practiceLogs: [],
+    mistakes: [],
+    coachReport: null,
+    journeyFeed: [],
+    reminders: null,
+    settings: {}
+  };
+
+  return {
+    ...base,
+    statistics: buildStatistics(base)
+  };
+}
+
+export function readStudySection(section) {
+  return normalizeSection(section, parseStoredValue(STORAGE_KEYS[section], defaultSectionValue(section)));
+}
+
+export function readLocalStudyData() {
+  const studyData = {
+    chapters: readStudySection("chapters"),
+    practiceLogs: readStudySection("practiceLogs"),
+    mistakes: readStudySection("mistakes"),
+    coachReport: readStudySection("coachReport"),
+    journeyFeed: readStudySection("journeyFeed"),
+    reminders: readStudySection("reminders"),
+    settings: readStudySection("settings")
+  };
+
+  return {
+    ...studyData,
+    statistics: buildStatistics(studyData)
+  };
+}
+
+function buildStatistics(studyData) {
+  const logs = studyData.practiceLogs || [];
+  const mistakes = studyData.mistakes || [];
+  const chapters = studyData.chapters || {};
+  const chapterList = Object.values(chapters).flatMap((items) => items || []);
+
+  return {
+    totalLogs: logs.length,
+    totalMistakes: mistakes.length,
+    totalCompletedChapters: chapterList.filter((chapter) => chapter.done).length,
+    totalTrackedChapters: chapterList.length,
+    averageAccuracy: logs.length
+      ? Math.round(logs.reduce((sum, log) => sum + (Number(log.accuracy) || 0), 0) / logs.length)
+      : 0,
+    updatedAt: new Date().toISOString()
+  };
+}
+
+function writeStudySectionRaw(section, value, updatedAt) {
+  const normalized = normalizeSection(section, value);
+  setStoredValue(STORAGE_KEYS[section], normalized);
+
+  const metadata = readStudyMetadata();
+  metadata[section] = updatedAt;
+  writeStudyMetadata(metadata);
+}
+
+export function writeLocalStudyData(studyData, { metadata = {}, silent = false } = {}) {
+  const fallbackTimestamp = new Date().toISOString();
+
+  Object.keys(STORAGE_KEYS).forEach((section) => {
+    const value =
+      section === "statistics"
+        ? buildStatistics(studyData)
+        : Object.hasOwn(studyData, section)
+          ? studyData[section]
+          : defaultSectionValue(section);
+
+    writeStudySectionRaw(section, value, metadata[section] || fallbackTimestamp);
+  });
+
+  if (!silent) {
+    dispatchStudyUpdate();
+  }
+}
+
+export function writeStudySection(section, value, { silent = false, updatedAt } = {}) {
+  const timestamp = updatedAt || new Date().toISOString();
+  writeStudySectionRaw(section, value, timestamp);
+
+  const nextStudyData = readLocalStudyData();
+  writeStudySectionRaw("statistics", buildStatistics(nextStudyData), timestamp);
+
+  if (!silent) {
+    dispatchStudyUpdate();
+  }
+}
+
+export function hasMeaningfulStudyData(studyData = readLocalStudyData()) {
+  return Boolean(
+    studyData.practiceLogs?.length ||
+    studyData.mistakes?.length ||
+    studyData.journeyFeed?.length ||
+    studyData.coachReport ||
+    Object.keys(studyData.settings || {}).length ||
+    studyData.reminders ||
+    Object.values(studyData.chapters || {}).some((items) =>
+      (items || []).some((chapter) => chapter.done || chapter.practice || chapter.weak || chapter.strong)
+    )
+  );
+}
+
+export function readStudyState() {
+  const studyData = readLocalStudyData();
+
+  return {
+    logs: studyData.practiceLogs,
+    chapters: studyData.chapters,
+    mistakes: studyData.mistakes
   };
 }
 
@@ -109,19 +330,27 @@ export function generateLocalCoachReport(snapshot) {
 }
 
 export function saveCoachReport(report) {
-  localStorage.setItem(COACH_REPORT_KEY, JSON.stringify(report));
+  writeStudySection("coachReport", report);
 }
 
 export function readCoachReport() {
-  return JSON.parse(localStorage.getItem(COACH_REPORT_KEY)) || null;
+  return readStudySection("coachReport");
 }
 
 export function appendJourneyEntry(entry) {
-  const current = JSON.parse(localStorage.getItem(JOURNEY_FEED_KEY)) || [];
+  const current = readStudySection("journeyFeed");
   const next = [{ ...entry, createdAt: new Date().toISOString() }, ...current].slice(0, 20);
-  localStorage.setItem(JOURNEY_FEED_KEY, JSON.stringify(next));
+  writeStudySection("journeyFeed", next);
 }
 
 export function readJourneyFeed() {
-  return JSON.parse(localStorage.getItem(JOURNEY_FEED_KEY)) || [];
+  return readStudySection("journeyFeed");
+}
+
+export function saveReminderData(reminder) {
+  writeStudySection("reminders", reminder);
+}
+
+export function readReminderData() {
+  return readStudySection("reminders");
 }

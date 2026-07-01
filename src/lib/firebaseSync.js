@@ -1,38 +1,25 @@
-import { initializeApp, getApps } from "firebase/app";
-import { getDatabase, ref, set } from "firebase/database";
-import { buildStudySnapshot } from "./studyData";
+import { auth, isFirebaseConfigured } from "./firebase";
+import { writeRemoteStudyData } from "./firestoreStudyData";
+import { readLocalStudyData, readStudyMetadata } from "./studyData";
 
-const config = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  databaseURL: import.meta.env.VITE_FIREBASE_DATABASE_URL,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID
-};
-
-function hasFirebaseConfig() {
-  return Object.values(config).every(Boolean);
-}
-
-export function isFirebaseConfigured() {
-  return hasFirebaseConfig();
-}
-
-function getFirebaseApp() {
-  if (!hasFirebaseConfig()) return null;
-  return getApps()[0] || initializeApp(config);
-}
+export { isFirebaseConfigured } from "./firebase";
 
 export async function syncStudyStateToFirebase(studyState) {
-  const app = getFirebaseApp();
-  if (!app) {
+  if (!isFirebaseConfigured()) {
     return { synced: false, reason: "missing_config" };
   }
 
-  const database = getDatabase(app);
-  const snapshot = buildStudySnapshot(studyState);
-  await set(ref(database, "studySnapshots/latest"), snapshot);
+  if (!auth.currentUser?.uid) {
+    return { synced: false, reason: "missing_user" };
+  }
+
+  const localStudyData = readLocalStudyData();
+  const localMetadata = readStudyMetadata();
+
+  if (studyState?.logs) localStudyData.practiceLogs = studyState.logs;
+  if (studyState?.chapters) localStudyData.chapters = studyState.chapters;
+  if (studyState?.mistakes) localStudyData.mistakes = studyState.mistakes;
+
+  await writeRemoteStudyData(auth.currentUser.uid, localStudyData, localMetadata);
   return { synced: true };
 }

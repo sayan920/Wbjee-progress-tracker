@@ -1,7 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { getReminderPreference, lightHaptic, scheduleDailyReminder } from "../lib/mobileNative";
 import { isFirebaseConfigured, syncStudyStateToFirebase } from "../lib/firebaseSync";
-import { readCoachReport, readJourneyFeed, readStudyState } from "../lib/studyData";
+import {
+  readCoachReport,
+  readJourneyFeed,
+  readReminderData,
+  readStudyState,
+  saveReminderData
+} from "../lib/studyData";
 
 export default function useDashboardModel() {
   const [state, setState] = useState(() => readStudyState());
@@ -15,13 +21,19 @@ export default function useDashboardModel() {
     setState(readStudyState());
     setCoachReport(readCoachReport());
     setJourneyFeed(readJourneyFeed());
+    setReminder(readReminderData());
   };
 
   update(); // initial load
 
   window.addEventListener("studyDataUpdated", update);
 
-  getReminderPreference().then(setReminder);
+  getReminderPreference().then((value) => {
+    if (!readReminderData() && value) {
+      saveReminderData(value);
+      setReminder(value);
+    }
+  });
 
   return () => {
     window.removeEventListener("studyDataUpdated", update);
@@ -80,6 +92,8 @@ export default function useDashboardModel() {
   const enableReminder = async () => {
     await lightHaptic();
     const savedReminder = await scheduleDailyReminder();
+    saveReminderData(savedReminder);
+    await syncStudyStateToFirebase();
     setReminder(savedReminder);
     setStatusMessage(`Daily reminder enabled for ${savedReminder.hour}:00.`);
   };

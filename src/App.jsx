@@ -1,6 +1,7 @@
 import useUiPlatform from "./platform/useUiPlatform";
 import { useAuth } from "./context/AuthContext";
 import AuthScreen from "./components/auth/AuthScreen";
+import AuthBootstrap from "./components/auth/AuthBootstrap";
 import WebApp from "./ui/web/WebApp";
 import MobileApp from "./ui/mobile/MobileApp";
 
@@ -16,7 +17,11 @@ export default function App() {
     return <AuthScreen />;
   }
 
-  return isMobileUi ? <MobileApp /> : <WebApp />;
+  return (
+    <AuthBootstrap>
+      {isMobileUi ? <MobileApp /> : <WebApp />}
+    </AuthBootstrap>
+  );
 }
 
 const loadingScreen = {

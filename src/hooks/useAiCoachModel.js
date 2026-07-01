@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { analyzeProgressWithCoach, askCoach } from "../lib/aiCoach";
-import { readCoachReport, readStudyState } from "../lib/studyData";
+import { syncStudyStateToFirebase } from "../lib/firebaseSync";
+import { readCoachReport, readStudyState, saveCoachReport } from "../lib/studyData";
 
 export default function useAiCoachModel() {
   const [input, setInput] = useState("");
@@ -22,6 +23,7 @@ export default function useAiCoachModel() {
     try {
       const report = await analyzeProgressWithCoach(readStudyState(), "manual_analysis");
       setCoachReport(report);
+      await syncStudyStateToFirebase();
     } catch (analysisError) {
       setError(analysisError.message);
     } finally {
@@ -39,7 +41,11 @@ export default function useAiCoachModel() {
     try {
       const data = await askCoach(nextMessages, readStudyState());
       setMessages((current) => [...current, { role: "assistant", content: data.reply }]);
-      if (data.report) setCoachReport(data.report);
+      if (data.report) {
+        saveCoachReport(data.report);
+        setCoachReport(data.report);
+        await syncStudyStateToFirebase();
+      }
     } catch {
       setError(
         "ChatGPT is not connected yet. Add your OpenAI API key in the backend env file and run the API server."
